@@ -1,95 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Phishing Detection System</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { 
-      font-family: 'Inter', sans-serif; 
-      min-height: 100vh;
-      margin: 0;
-    }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    }
-    
-    /* Animated Blue Mesh Background for Home */
-    .hero-gradient {
-      background-color: #020617;
-      background-image: 
-        radial-gradient(at 0% 0%, hsla(222, 47%, 11%, 1) 0, transparent 50%), 
-        radial-gradient(at 50% 0%, hsla(217, 91%, 35%, 1) 0, transparent 50%), 
-        radial-gradient(at 100% 0%, hsla(199, 89%, 48%, 1) 0, transparent 50%), 
-        radial-gradient(at 0% 100%, hsla(217, 91%, 35%, 1) 0, transparent 50%), 
-        radial-gradient(at 50% 100%, hsla(222, 47%, 11%, 1) 0, transparent 50%), 
-        radial-gradient(at 100% 100%, hsla(199, 89%, 48%, 1) 0, transparent 50%);
-      background-size: 200% 200%;
-      animation: gradientMove 15s ease infinite;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Subtle texture overlay */
-    .hero-gradient::before, .app-gradient::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
-      opacity: 0.05;
-      pointer-events: none;
-    }
-
-    @keyframes gradientMove {
-      0% { background-position: 0% 0%; }
-      50% { background-position: 100% 100%; }
-      100% { background-position: 0% 0%; }
-    }
-
-    /* New Deep Blue Background for Internal Pages */
-    .app-gradient {
-      background-color: #020617;
-      background-image: 
-        radial-gradient(at 0% 0%, #1e1b4b 0, transparent 50%), 
-        radial-gradient(at 100% 0%, #312e81 0, transparent 50%), 
-        radial-gradient(at 100% 100%, #1e293b 0, transparent 50%), 
-        radial-gradient(at 0% 100%, #0f172a 0, transparent 50%);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .animate-float {
-      animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
-    }
-  </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Phishing Detection System</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="text-slate-900 overflow-x-hidden">
-  <div id="root"></div>
-  <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
-<script type="module" src="/index.tsx"></script>
+<body>
+    <div id="auth-container" class="auth-container">
+        <div class="auth-modes">
+            <button class="auth-btn active" onclick="switchAuth('login')">Login</button>
+            <button class="auth-btn" onclick="switchAuth('signup')">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form active">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username" />
+            <input type="password" id="login-password" placeholder="Password" />
+            <button onclick="handleLogin()">Login</button>
+            <p class="error" id="login-error"></p>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" class="auth-form">
+            <h2>Sign Up</h2>
+            <input type="text" id="signup-username" placeholder="Username" />
+            <input type="email" id="signup-email" placeholder="Email" />
+            <input type="password" id="signup-password" placeholder="Password" />
+            <input type="password" id="signup-confirm" placeholder="Confirm Password" />
+            <button onclick="handleSignup()">Sign Up</button>
+            <p class="error" id="signup-error"></p>
+        </div>
+    </div>
+
+    <!-- Dashboard Container (hidden initially) -->
+    <div id="dashboard-container" class="dashboard-container" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🔐 Phishing Detection System</h1>
+                <div class="user-info">
+                    <span id="user-name">User</span>
+                    <button onclick="handleLogout()" class="logout-btn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Scanner Section -->
+            <section class="scanner-section">
+                <div class="scanner-card">
+                    <h2>🔍 URL Scanner</h2>
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="url-input" 
+                            placeholder="Enter URL to scan (e.g., https://example.com)"
+                            class="url-input"
+                        />
+                        <button onclick="scanUrl()" class="scan-btn">Scan URL</button>
+                    </div>
+                    <p class="info-text">Or scan a QR code that redirects to a URL</p>
+                </div>
+
+                <!-- Loading Animation -->
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing URL...</p>
+                </div>
+
+                <!-- Result Section -->
+                <div id="result-section" class="result-section" style="display: none;">
+                    <div id="result-card" class="result-card">
+                        <!-- Result will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="error-message" class="error-container" style="display: none;">
+                    <p id="error-text"></p>
+                </div>
+            </section>
+
+            <!-- Model Performance Section -->
+            <section class="metrics-section">
+                <div class="metrics-card">
+                    <h2>📊 Model Performance</h2>
+                    <button onclick="loadMetrics()" class="metrics-btn">Load Metrics</button>
+                    
+                    <div id="metrics-container" style="display: none;">
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <h3>Accuracy</h3>
+                                <p id="metric-accuracy" class="metric-value">-</p>
+                            </div>
+                            <div class="metric-item">
+                                <h3>Precision</h3>
+                                <p id="metric-precision" class="metric-value">-</p>
+                            </div>
+                            <div class="metric-item">
+                                <h3>Recall</h3>
+                                <p id="metric-recall" class="metric-value">-</p>
+                            </div>
+                            <div class="metric-item">
+                                <h3>F1 Score</h3>
+                                <p id="metric-f1" class="metric-value">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Algorithm Information -->
+                        <div class="algorithm-info">
+                            <h3>Selected Algorithm: <span id="algo-name">Random Forest</span></h3>
+                            <p id="algo-reason"></p>
+                        </div>
+
+                        <!-- Confusion Matrix -->
+                        <div class="confusion-matrix">
+                            <h3>Confusion Matrix</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Predicted Negative</th>
+                                        <th>Predicted Positive</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Actually Negative</strong></td>
+                                        <td id="cm-tn">-</td>
+                                        <td id="cm-fp">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Actually Positive</strong></td>
+                                        <td id="cm-fn">-</td>
+                                        <td id="cm-tp">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Algorithm Comparison -->
+                        <div class="algo-comparison">
+                            <h3>Algorithm Comparison</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>SVM</th>
+                                        <th>Random Forest</th>
+                                        <th>Winner</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparison-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="metrics-loading" class="loading-small" style="display: none;">
+                        <div class="spinner-small"></div>
+                        <p>Loading metrics...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Phishing Detection System. Production Ready.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
